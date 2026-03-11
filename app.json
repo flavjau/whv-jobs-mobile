@@ -38,13 +38,24 @@
         }
       }
     },
+    "platforms": ["ios", "android", "web"],
+    "web": {
+      "bundler": "metro",
+      "output": "single",
+      "favicon": "./assets/favicon.png"
+    },
+    "experiments": {
+      "baseUrl": "/whv-jobs-mobile"
+    },
     "plugins": [
       "expo-router",
       "expo-secure-store",
       "expo-location"
     ],
     "extra": {
-      "router": {},
+      "router": {
+        "origin": false
+      },
       "eas": {
         "projectId": "e2fb63ca-86fd-4403-bee5-3d6ffd4099ff"
       }

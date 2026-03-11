@@ -1,120 +1,203 @@
-import { useState } from 'react';
-import { View, Text, FlatList, TextInput, Pressable, ActivityIndicator, ScrollView } from 'react-native';
+import { useState, useMemo } from 'react';
+import { View, Text, TextInput, FlatList, Pressable, ActivityIndicator, Platform } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAgencies } from '../../hooks/use-agencies';
 import { AgencyCard } from '../../components/agency-card';
-import { AUSTRALIAN_STATES } from '../../lib/types';
 import { colors, spacing, borderRadius, fontSize } from '../../constants/theme';
 
-export default function DirectoryScreen() {
-  const [search, setSearch] = useState('');
-  const [selectedState, setSelectedState] = useState<string | undefined>();
-  const [only88Days, setOnly88Days] = useState(false);
+const STATES = ['All', 'NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'NT', 'ACT'];
+const CATEGORIES = ['All', 'Farm', 'Meat Processing', 'Fishery', 'Mining', 'Construction', 'Hospitality', 'Other'];
 
-  const { data: agencies, isLoading, error, refetch } = useAgencies({
-    search: search || undefined,
-    state: selectedState,
-    is88Days: only88Days || undefined,
-  });
+export default function DirectoryScreen() {
+  const { data: agencies, isLoading, error } = useAgencies();
+  const [search, setSearch] = useState('');
+  const [selectedState, setSelectedState] = useState('All');
+  const [selectedCategory, setSelectedCategory] = useState('All');
+  const [only88Days, setOnly88Days] = useState(false);
+  const [onlyHiring, setOnlyHiring] = useState(false);
+
+  const filtered = useMemo(() => {
+    if (!agencies) return [];
+    return agencies.filter(a => {
+      if (search && !a.name.toLowerCase().includes(search.toLowerCase()) &&
+          !(a.city?.toLowerCase().includes(search.toLowerCase())) &&
+          !a.state.toLowerCase().includes(search.toLowerCase())) return false;
+      if (selectedState !== 'All' && a.state !== selectedState) return false;
+      if (selectedCategory !== 'All' && a.category !== selectedCategory) return false;
+      if (only88Days && !a.is88DaysEligible) return false;
+      if (onlyHiring && !a.isCurrentlyHiring) return false;
+      return true;
+    });
+  }, [agencies, search, selectedState, selectedCategory, only88Days, onlyHiring]);
 
   return (
-    <View style={{ flex: 1, backgroundColor: colors.background }}>
-      {/* Search */}
-      <View style={{ padding: spacing.md, gap: spacing.sm, backgroundColor: colors.surface }}>
-        <TextInput
-          style={{
-            backgroundColor: colors.surfaceSecondary,
-            borderRadius: borderRadius.md,
-            padding: spacing.md,
-            fontSize: fontSize.md,
-            color: colors.text,
-          }}
-          placeholder="Search employers..."
-          placeholderTextColor={colors.textTertiary}
-          value={search}
-          onChangeText={setSearch}
-          clearButtonMode="while-editing"
-        />
+    <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
+      {/* Header */}
+      <View style={{ paddingHorizontal: spacing.md, paddingTop: spacing.sm, paddingBottom: spacing.xs }}>
+        <Text style={{ fontSize: fontSize.xxl, fontWeight: '800', color: colors.text }}>
+          WHV Jobs
+        </Text>
+        <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary, marginTop: 2 }}>
+          Find regional employers in Australia
+        </Text>
+      </View>
 
-        {/* State filters */}
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: spacing.xs }}>
-          <Pressable
-            onPress={() => setSelectedState(undefined)}
+      {/* Search */}
+      <View style={{ paddingHorizontal: spacing.md, paddingVertical: spacing.xs }}>
+        <View style={{
+          flexDirection: 'row',
+          alignItems: 'center',
+          backgroundColor: colors.surface,
+          borderRadius: borderRadius.md,
+          paddingHorizontal: spacing.sm,
+          borderWidth: 1,
+          borderColor: colors.border,
+        }}>
+          <Ionicons name="search" size={18} color={colors.textTertiary} />
+          <TextInput
             style={{
-              paddingHorizontal: spacing.md,
-              paddingVertical: spacing.xs,
-              borderRadius: borderRadius.full,
-              backgroundColor: !selectedState ? colors.primary : colors.surfaceSecondary,
+              flex: 1,
+              paddingVertical: Platform.OS === 'web' ? 10 : spacing.sm,
+              paddingHorizontal: spacing.xs,
+              fontSize: fontSize.md,
+              color: colors.text,
             }}
-          >
-            <Text style={{ color: !selectedState ? '#fff' : colors.textSecondary, fontSize: fontSize.sm, fontWeight: '500' }}>
-              All States
-            </Text>
-          </Pressable>
-          {AUSTRALIAN_STATES.map(state => (
+            placeholder="Search by name, city, state..."
+            placeholderTextColor={colors.textTertiary}
+            value={search}
+            onChangeText={setSearch}
+          />
+          {search ? (
+            <Pressable onPress={() => setSearch('')}>
+              <Ionicons name="close-circle" size={18} color={colors.textTertiary} />
+            </Pressable>
+          ) : null}
+        </View>
+      </View>
+
+      {/* State filter */}
+      <View style={{ paddingLeft: spacing.md, paddingVertical: spacing.xs }}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={STATES}
+          keyExtractor={item => item}
+          contentContainerStyle={{ gap: 6, paddingRight: spacing.md }}
+          renderItem={({ item }) => (
             <Pressable
-              key={state}
-              onPress={() => setSelectedState(selectedState === state ? undefined : state)}
+              onPress={() => setSelectedState(item)}
               style={{
-                paddingHorizontal: spacing.md,
-                paddingVertical: spacing.xs,
+                paddingHorizontal: 12,
+                paddingVertical: 6,
                 borderRadius: borderRadius.full,
-                backgroundColor: selectedState === state ? colors.primary : colors.surfaceSecondary,
+                backgroundColor: selectedState === item ? colors.primary : colors.surfaceSecondary,
               }}
             >
               <Text style={{
-                color: selectedState === state ? '#fff' : colors.textSecondary,
-                fontSize: fontSize.sm,
-                fontWeight: '500',
+                fontSize: 12,
+                fontWeight: '600',
+                color: selectedState === item ? '#fff' : colors.textSecondary,
               }}>
-                {state}
+                {item}
               </Text>
             </Pressable>
-          ))}
-        </ScrollView>
+          )}
+        />
+      </View>
 
-        {/* 88 days toggle */}
+      {/* Toggle filters */}
+      <View style={{ flexDirection: 'row', paddingHorizontal: spacing.md, gap: 8, paddingBottom: spacing.xs }}>
         <Pressable
           onPress={() => setOnly88Days(!only88Days)}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
-            gap: spacing.xs,
+            gap: 4,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: borderRadius.full,
+            backgroundColor: only88Days ? '#16a34a' : colors.surfaceSecondary,
           }}
         >
-          <Text style={{ fontSize: fontSize.md }}>
-            {only88Days ? '✅' : '⬜'}
+          <Ionicons name="checkmark-circle" size={14} color={only88Days ? '#fff' : colors.textTertiary} />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: only88Days ? '#fff' : colors.textSecondary }}>
+            88 Days
           </Text>
-          <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>
-            88 Days eligible only
+        </Pressable>
+
+        <Pressable
+          onPress={() => setOnlyHiring(!onlyHiring)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: borderRadius.full,
+            backgroundColor: onlyHiring ? '#2563eb' : colors.surfaceSecondary,
+          }}
+        >
+          <Ionicons name="briefcase" size={14} color={onlyHiring ? '#fff' : colors.textTertiary} />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: onlyHiring ? '#fff' : colors.textSecondary }}>
+            Hiring
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setSelectedCategory(selectedCategory === 'All' ? 'Farm' : 'All')}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: borderRadius.full,
+            backgroundColor: selectedCategory !== 'All' ? colors.primary : colors.surfaceSecondary,
+          }}
+        >
+          <Ionicons name="filter" size={14} color={selectedCategory !== 'All' ? '#fff' : colors.textTertiary} />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: selectedCategory !== 'All' ? '#fff' : colors.textSecondary }}>
+            Category
           </Text>
         </Pressable>
       </View>
 
-      {/* Results */}
+      {/* Results count */}
+      <View style={{ paddingHorizontal: spacing.md, paddingBottom: spacing.xs }}>
+        <Text style={{ fontSize: 12, color: colors.textTertiary }}>
+          {filtered.length} employer{filtered.length !== 1 ? 's' : ''} found
+        </Text>
+      </View>
+
+      {/* List */}
       {isLoading ? (
-        <ActivityIndicator style={{ marginTop: spacing.xl }} color={colors.primary} size="large" />
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+          <ActivityIndicator size="large" color={colors.primary} />
+        </View>
       ) : error ? (
-        <View style={{ padding: spacing.lg, alignItems: 'center' }}>
-          <Text style={{ color: colors.error, fontSize: fontSize.md }}>Failed to load employers</Text>
-          <Pressable onPress={() => refetch()} style={{ marginTop: spacing.sm }}>
-            <Text style={{ color: colors.primary, fontWeight: '600' }}>Retry</Text>
-          </Pressable>
+        <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', padding: spacing.lg }}>
+          <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+          <Text style={{ color: colors.error, marginTop: spacing.sm, textAlign: 'center' }}>
+            Failed to load employers
+          </Text>
         </View>
       ) : (
         <FlatList
-          data={agencies}
+          data={filtered}
           keyExtractor={(item) => item.id}
           renderItem={({ item }) => <AgencyCard agency={item} />}
           contentContainerStyle={{ padding: spacing.md, gap: spacing.sm }}
           ListEmptyComponent={
-            <Text style={{ textAlign: 'center', color: colors.textSecondary, marginTop: spacing.xl }}>
-              No employers found
-            </Text>
+            <View style={{ alignItems: 'center', marginTop: spacing.xxl }}>
+              <Ionicons name="search-outline" size={48} color={colors.textTertiary} />
+              <Text style={{ fontSize: fontSize.md, color: colors.textSecondary, textAlign: 'center', marginTop: spacing.sm }}>
+                No employers match your filters.
+              </Text>
+            </View>
           }
-          onRefresh={refetch}
-          refreshing={isLoading}
         />
       )}
-    </View>
+    </SafeAreaView>
   );
 }

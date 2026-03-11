@@ -1,73 +1,97 @@
 import { View, Text, Pressable } from 'react-native';
-import { Link } from 'expo-router';
+import { useRouter } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { Agency } from '../lib/types';
 import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
 
-type Props = { agency: Agency; isPremium?: boolean };
+export function AgencyCard({ agency }: { agency: Agency }) {
+  const router = useRouter();
 
-export function AgencyCard({ agency, isPremium = false }: Props) {
   return (
-    <Link href={`/agency/${agency.id}`} asChild>
-      <Pressable
-        style={{
-          backgroundColor: colors.surface,
-          borderRadius: borderRadius.md,
-          padding: spacing.md,
-          gap: spacing.sm,
-          boxShadow: '0 1px 3px rgba(0,0,0,0.08)',
-          borderWidth: 1,
-          borderColor: colors.border,
-        }}
-      >
-        <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
+    <Pressable
+      onPress={() => router.push(`/agency/${agency.id}`)}
+      style={({ pressed }) => ({
+        backgroundColor: colors.surface,
+        borderRadius: borderRadius.md,
+        padding: spacing.md,
+        borderWidth: 1,
+        borderColor: pressed ? colors.primary : colors.border,
+        opacity: pressed ? 0.95 : 1,
+      })}
+    >
+      {/* Header row */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+        <View style={{ flex: 1, marginRight: spacing.sm }}>
           <Text
-            style={{ fontSize: fontSize.lg, fontWeight: '600', color: colors.text, flex: 1 }}
+            style={{ fontSize: fontSize.md, fontWeight: '700', color: colors.text }}
             numberOfLines={1}
           >
             {agency.name}
           </Text>
-          {agency.is88DaysEligible && (
-            <View style={{
-              backgroundColor: '#dcfce7',
-              paddingHorizontal: spacing.sm,
-              paddingVertical: 2,
-              borderRadius: borderRadius.full,
-            }}>
-              <Text style={{ fontSize: fontSize.xs, color: '#16a34a', fontWeight: '600' }}>
-                88 Days
-              </Text>
-            </View>
-          )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', marginTop: 4, gap: 4 }}>
+            <Ionicons name="location-outline" size={14} color={colors.textSecondary} />
+            <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>
+              {agency.city ? `${agency.city}, ` : ''}{agency.state}
+            </Text>
+          </View>
         </View>
-
-        <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-          <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>
-            📍 {agency.state}{agency.city ? `, ${agency.city}` : ''}
-          </Text>
-          <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>
-            🏢 {agency.category}
-          </Text>
-        </View>
-
         {agency.googleRating && (
-          <Text style={{ fontSize: fontSize.sm, color: colors.secondary }}>
-            ⭐ {agency.googleRating.toFixed(1)} ({agency.googleReviewCount} reviews)
-          </Text>
-        )}
-
-        {!isPremium && (agency.phonePrimary || agency.emailGeneral) && (
-          <View style={{
-            backgroundColor: colors.premiumBg,
-            padding: spacing.sm,
-            borderRadius: borderRadius.sm,
-            alignItems: 'center',
-          }}>
-            <Text style={{ fontSize: fontSize.sm, color: colors.premium, fontWeight: '500' }}>
-              🔒 Unlock contact info — Premium
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="star" size={14} color="#f59e0b" />
+            <Text style={{ fontSize: fontSize.sm, fontWeight: '600', color: colors.text }}>
+              {agency.googleRating.toFixed(1)}
             </Text>
           </View>
         )}
-      </Pressable>
-    </Link>
+      </View>
+
+      {/* Tags row */}
+      <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.sm }}>
+        <View style={{
+          backgroundColor: colors.surfaceSecondary,
+          paddingHorizontal: 8,
+          paddingVertical: 3,
+          borderRadius: borderRadius.full,
+        }}>
+          <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '500' }}>
+            {agency.category}
+          </Text>
+        </View>
+
+        {agency.is88DaysEligible && (
+          <View style={{
+            backgroundColor: '#dcfce7',
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: borderRadius.full,
+          }}>
+            <Text style={{ fontSize: 11, color: '#16a34a', fontWeight: '600' }}>
+              88 Days
+            </Text>
+          </View>
+        )}
+
+        {agency.isCurrentlyHiring && (
+          <View style={{
+            backgroundColor: '#dbeafe',
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: borderRadius.full,
+          }}>
+            <Text style={{ fontSize: 11, color: '#2563eb', fontWeight: '600' }}>
+              Hiring
+            </Text>
+          </View>
+        )}
+      </View>
+
+      {/* Footer */}
+      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm }}>
+        <Text style={{ fontSize: 11, color: colors.textTertiary }}>
+          {Math.round(agency.confidenceScore * 100)}% verified
+        </Text>
+        <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
+      </View>
+    </Pressable>
   );
 }
