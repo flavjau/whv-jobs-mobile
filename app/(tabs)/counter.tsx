@@ -1,16 +1,41 @@
 import { useState, useEffect } from 'react';
-import { View, Text, Pressable, ScrollView } from 'react-native';
-import * as SecureStore from 'expo-secure-store';
+import { View, Text, Pressable, ScrollView, Platform } from 'react-native';
 import { colors, spacing, borderRadius, fontSize } from '../../constants/theme';
 
 const STORAGE_KEY = 'whv_88days_start';
+
+const storage = {
+  get: async (key: string) => {
+    if (Platform.OS === 'web') {
+      return localStorage.getItem(key);
+    }
+    const SecureStore = require('expo-secure-store');
+    return SecureStore.getItemAsync(key);
+  },
+  set: async (key: string, value: string) => {
+    if (Platform.OS === 'web') {
+      localStorage.setItem(key, value);
+      return;
+    }
+    const SecureStore = require('expo-secure-store');
+    return SecureStore.setItemAsync(key, value);
+  },
+  remove: async (key: string) => {
+    if (Platform.OS === 'web') {
+      localStorage.removeItem(key);
+      return;
+    }
+    const SecureStore = require('expo-secure-store');
+    return SecureStore.deleteItemAsync(key);
+  },
+};
 
 export default function CounterScreen() {
   const [startDate, setStartDate] = useState<Date | null>(null);
   const [now, setNow] = useState(new Date());
 
   useEffect(() => {
-    SecureStore.getItemAsync(STORAGE_KEY).then(val => {
+    storage.get(STORAGE_KEY).then((val: string | null) => {
       if (val) setStartDate(new Date(val));
     });
 
@@ -20,12 +45,12 @@ export default function CounterScreen() {
 
   const setStart = async () => {
     const date = new Date();
-    await SecureStore.setItemAsync(STORAGE_KEY, date.toISOString());
+    await storage.set(STORAGE_KEY, date.toISOString());
     setStartDate(date);
   };
 
   const reset = async () => {
-    await SecureStore.deleteItemAsync(STORAGE_KEY);
+    await storage.remove(STORAGE_KEY);
     setStartDate(null);
   };
 
