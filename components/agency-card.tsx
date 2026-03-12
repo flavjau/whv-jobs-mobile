@@ -88,7 +88,7 @@ export function AgencyCard({ agency }: { agency: Agency }) {
       {/* Footer */}
       <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm }}>
         <Text style={{ fontSize: 11, color: colors.textTertiary }}>
-          {Math.round(agency.confidenceScore * 100)}% verified
+          {agency.confidenceScore > 1 ? Math.round(agency.confidenceScore) : Math.round(agency.confidenceScore * 100)}% verified
         </Text>
         <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
       </View>

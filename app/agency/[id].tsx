@@ -1,12 +1,13 @@
 import { View, Text, ScrollView, Pressable, Linking, ActivityIndicator } from 'react-native';
 import { useLocalSearchParams, Stack } from 'expo-router';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { useAgency } from '../../hooks/use-agencies';
 import { colors, spacing, borderRadius, fontSize } from '../../constants/theme';
 
 function InfoRow({ label, value, blur = false }: { label: string; value: string | null; blur?: boolean }) {
   if (!value) return null;
   return (
-    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.sm }}>
+    <View style={{ flexDirection: 'row', justifyContent: 'space-between', paddingVertical: spacing.sm, borderBottomWidth: 0.5, borderBottomColor: colors.border }}>
       <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary, flex: 1 }}>{label}</Text>
       <Text
         selectable={!blur}
@@ -26,11 +27,22 @@ function InfoRow({ label, value, blur = false }: { label: string; value: string 
   );
 }
 
+function formatType(type: string | null): string {
+  if (!type) return '';
+  return type
+    .replace(/_/g, ' ')
+    .replace(/\b\w/g, l => l.toUpperCase());
+}
+
+function formatConfidence(score: number): string {
+  if (score > 1) return `${Math.round(score)}%`;
+  return `${Math.round(score * 100)}%`;
+}
+
 export default function AgencyDetailScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
   const { data: agency, isLoading, error } = useAgency(id);
 
-  // TODO: check user subscription tier
   const isPremium = false;
 
   if (isLoading) {
@@ -44,7 +56,8 @@ export default function AgencyDetailScreen() {
   if (error || !agency) {
     return (
       <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center', backgroundColor: colors.background }}>
-        <Text style={{ color: colors.error }}>Failed to load employer</Text>
+        <Ionicons name="alert-circle-outline" size={48} color={colors.error} />
+        <Text style={{ color: colors.error, marginTop: spacing.sm }}>Failed to load employer</Text>
       </View>
     );
   }
@@ -59,26 +72,45 @@ export default function AgencyDetailScreen() {
       {/* Header */}
       <View style={{ gap: spacing.xs }}>
         <Text style={{ fontSize: fontSize.xxl, fontWeight: '800', color: colors.text }}>{agency.name}</Text>
-        <View style={{ flexDirection: 'row', gap: spacing.sm, flexWrap: 'wrap' }}>
-          <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>📍 {agency.state}{agency.city ? `, ${agency.city}` : ''}</Text>
-          <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>🏢 {agency.category}</Text>
-        </View>
-        {agency.is88DaysEligible && (
-          <View style={{
-            backgroundColor: '#dcfce7',
-            paddingHorizontal: spacing.sm,
-            paddingVertical: 4,
-            borderRadius: borderRadius.full,
-            alignSelf: 'flex-start',
-          }}>
-            <Text style={{ fontSize: fontSize.sm, color: '#16a34a', fontWeight: '600' }}>✅ 88 Days Eligible</Text>
+        <View style={{ flexDirection: 'row', gap: spacing.md, flexWrap: 'wrap', alignItems: 'center' }}>
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="location-outline" size={16} color={colors.textSecondary} />
+            <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>
+              {agency.city ? `${agency.city}, ` : ''}{agency.state}
+            </Text>
           </View>
-        )}
-        {agency.googleRating && (
-          <Text style={{ fontSize: fontSize.md, color: colors.secondary }}>
-            ⭐ {agency.googleRating.toFixed(1)} ({agency.googleReviewCount} reviews)
-          </Text>
-        )}
+          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+            <Ionicons name="business-outline" size={16} color={colors.textSecondary} />
+            <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>{agency.category}</Text>
+          </View>
+        </View>
+
+        {/* Tags */}
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: spacing.xs }}>
+          {agency.is88DaysEligible && (
+            <View style={{
+              backgroundColor: '#dcfce7',
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: borderRadius.full,
+            }}>
+              <Text style={{ fontSize: 12, color: '#16a34a', fontWeight: '600' }}>88 Days Eligible</Text>
+            </View>
+          )}
+          {agency.googleRating && (
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
+              <Ionicons name="star" size={16} color="#f59e0b" />
+              <Text style={{ fontSize: fontSize.sm, color: colors.text, fontWeight: '600' }}>
+                {agency.googleRating.toFixed(1)}
+              </Text>
+              {agency.googleReviewCount && (
+                <Text style={{ fontSize: 12, color: colors.textTertiary }}>
+                  ({agency.googleReviewCount})
+                </Text>
+              )}
+            </View>
+          )}
+        </View>
       </View>
 
       {/* Contact Info */}
@@ -103,10 +135,14 @@ export default function AgencyDetailScreen() {
             padding: spacing.md,
             borderRadius: borderRadius.sm,
             alignItems: 'center',
-            marginTop: spacing.sm,
+            marginTop: spacing.md,
+            flexDirection: 'row',
+            justifyContent: 'center',
+            gap: 8,
           }}>
+            <Ionicons name="lock-closed" size={18} color="#fff" />
             <Text style={{ color: '#fff', fontWeight: '700', fontSize: fontSize.md }}>
-              🔓 Unlock Contact Info — $19 AUD
+              Unlock Contact Info — $19 AUD
             </Text>
           </Pressable>
         )}
@@ -121,9 +157,13 @@ export default function AgencyDetailScreen() {
                 padding: spacing.sm,
                 borderRadius: borderRadius.sm,
                 alignItems: 'center',
+                flexDirection: 'row',
+                justifyContent: 'center',
+                gap: 6,
               }}
             >
-              <Text style={{ color: '#fff', fontWeight: '600' }}>📞 Call</Text>
+              <Ionicons name="call" size={16} color="#fff" />
+              <Text style={{ color: '#fff', fontWeight: '600' }}>Call</Text>
             </Pressable>
             {agency.emailGeneral && (
               <Pressable
@@ -134,9 +174,13 @@ export default function AgencyDetailScreen() {
                   padding: spacing.sm,
                   borderRadius: borderRadius.sm,
                   alignItems: 'center',
+                  flexDirection: 'row',
+                  justifyContent: 'center',
+                  gap: 6,
                 }}
               >
-                <Text style={{ color: '#fff', fontWeight: '600' }}>✉️ Email</Text>
+                <Ionicons name="mail" size={16} color="#fff" />
+                <Text style={{ color: '#fff', fontWeight: '600' }}>Email</Text>
               </Pressable>
             )}
           </View>
@@ -155,8 +199,8 @@ export default function AgencyDetailScreen() {
           Details
         </Text>
         <InfoRow label="ABN" value={agency.abn} />
-        <InfoRow label="Type" value={agency.contactType} />
-        <InfoRow label="Confidence" value={`${Math.round(agency.confidenceScore * 100)}%`} />
+        <InfoRow label="Type" value={formatType(agency.contactType)} />
+        <InfoRow label="Confidence" value={formatConfidence(agency.confidenceScore)} />
         {agency.salaryMin && agency.salaryMax && (
           <InfoRow label="Salary Range" value={`$${agency.salaryMin} - $${agency.salaryMax} / ${agency.salaryUnit}`} />
         )}
