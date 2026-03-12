@@ -14,6 +14,7 @@ async function fetchAgencies(filters: AgencyFilters): Promise<Agency[]> {
     .from('Agency')
     .select('*')
     .eq('isActive', true)
+    .gt('confidenceScore', 0)
     .order('confidenceScore', { ascending: false });
 
   if (filters.state) {
