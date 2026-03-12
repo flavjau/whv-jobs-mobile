@@ -8,12 +8,22 @@ import { colors, spacing, borderRadius, fontSize } from '../../constants/theme';
 
 const STATES = ['All', 'NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'NT', 'ACT'];
 
+const EMPLOYER_TYPES = [
+  { key: 'all', label: 'All Types', color: colors.textSecondary, bg: colors.surfaceSecondary },
+  { key: 'direct_employer', label: 'Direct Employer', color: '#0369a1', bg: '#e0f2fe' },
+  { key: 'traffic_control', label: 'TC Company', color: '#7c3aed', bg: '#ede9fe', match: ['traffic_control_company', 'tc_company'] },
+  { key: 'recruitment_agency', label: 'Recruiter', color: '#be185d', bg: '#fce7f3' },
+  { key: 'contractor', label: 'Contractor', color: '#92400e', bg: '#fef3c7', match: ['client_contractor', 'contractor'] },
+  { key: 'labour_hire', label: 'Labour Hire', color: '#9333ea', bg: '#f3e8ff' },
+];
+
 export default function DirectoryScreen() {
   const { data: agencies, isLoading, error } = useAgencies();
   const [search, setSearch] = useState('');
   const [selectedState, setSelectedState] = useState('All');
   const [visa417, setVisa417] = useState(false);
   const [visa462, setVisa462] = useState(false);
+  const [selectedType, setSelectedType] = useState('all');
   const filtered = useMemo(() => {
     if (!agencies) return [];
     return agencies.filter(a => {
@@ -23,9 +33,14 @@ export default function DirectoryScreen() {
       if (selectedState !== 'All' && a.state !== selectedState) return false;
       if (visa417 && !a.eligible88Days) return false;
       if (visa462 && !a.eligible88Days462) return false;
+      if (selectedType !== 'all') {
+        const typeFilter = EMPLOYER_TYPES.find(t => t.key === selectedType);
+        const matchValues = (typeFilter as any)?.match || [selectedType];
+        if (!matchValues.includes(a.contactType)) return false;
+      }
       return true;
     });
-  }, [agencies, search, selectedState, visa417, visa462]);
+  }, [agencies, search, selectedState, visa417, visa462, selectedType]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
@@ -141,6 +156,38 @@ export default function DirectoryScreen() {
         </Pressable>
 
 
+      </View>
+
+      {/* Employer type filter */}
+      <View style={{ paddingLeft: spacing.md, paddingBottom: spacing.xs }}>
+        <FlatList
+          horizontal
+          showsHorizontalScrollIndicator={false}
+          data={EMPLOYER_TYPES}
+          keyExtractor={item => item.key}
+          contentContainerStyle={{ gap: 6, paddingRight: spacing.md }}
+          renderItem={({ item }) => (
+            <Pressable
+              onPress={() => setSelectedType(item.key)}
+              style={{
+                paddingHorizontal: 12,
+                paddingVertical: 6,
+                borderRadius: borderRadius.full,
+                backgroundColor: selectedType === item.key ? item.bg : colors.surfaceSecondary,
+                borderWidth: selectedType === item.key ? 1.5 : 0,
+                borderColor: selectedType === item.key ? item.color : 'transparent',
+              }}
+            >
+              <Text style={{
+                fontSize: 12,
+                fontWeight: '600',
+                color: selectedType === item.key ? item.color : colors.textTertiary,
+              }}>
+                {item.label}
+              </Text>
+            </Pressable>
+          )}
+        />
       </View>
 
       {/* Results count */}
