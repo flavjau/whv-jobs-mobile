@@ -81,7 +81,7 @@ export default function AgencyDetailScreen() {
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="business-outline" size={16} color={colors.textSecondary} />
-            <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>{agency.category}</Text>
+            <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>{formatType(agency.category)}</Text>
           </View>
         </View>
 
@@ -198,7 +198,6 @@ export default function AgencyDetailScreen() {
         <Text style={{ fontSize: fontSize.lg, fontWeight: '700', color: colors.text, marginBottom: spacing.sm }}>
           Details
         </Text>
-        <InfoRow label="ABN" value={agency.abn} />
         <InfoRow label="Type" value={formatType(agency.contactType)} />
         <InfoRow label="Confidence" value={formatConfidence(agency.confidenceScore)} />
         {agency.salaryMin && agency.salaryMax && (

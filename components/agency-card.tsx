@@ -54,7 +54,7 @@ export function AgencyCard({ agency }: { agency: Agency }) {
           borderRadius: borderRadius.full,
         }}>
           <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '500' }}>
-            {agency.category}
+            {agency.category.replace(/-|_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
           </Text>
         </View>
 
