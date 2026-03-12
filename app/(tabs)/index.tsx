@@ -7,14 +7,13 @@ import { AgencyCard } from '../../components/agency-card';
 import { colors, spacing, borderRadius, fontSize } from '../../constants/theme';
 
 const STATES = ['All', 'NSW', 'VIC', 'QLD', 'WA', 'SA', 'TAS', 'NT', 'ACT'];
-const CATEGORIES = ['All', 'Farm', 'Meat Processing', 'Fishery', 'Mining', 'Construction', 'Hospitality', 'Other'];
 
 export default function DirectoryScreen() {
   const { data: agencies, isLoading, error } = useAgencies();
   const [search, setSearch] = useState('');
   const [selectedState, setSelectedState] = useState('All');
-  const [selectedCategory, setSelectedCategory] = useState('All');
-  const [only88Days, setOnly88Days] = useState(false);
+  const [visa417, setVisa417] = useState(false);
+  const [visa462, setVisa462] = useState(false);
   const [onlyHiring, setOnlyHiring] = useState(false);
 
   const filtered = useMemo(() => {
@@ -24,12 +23,12 @@ export default function DirectoryScreen() {
           !(a.city?.toLowerCase().includes(search.toLowerCase())) &&
           !a.state.toLowerCase().includes(search.toLowerCase())) return false;
       if (selectedState !== 'All' && a.state !== selectedState) return false;
-      if (selectedCategory !== 'All' && a.category !== selectedCategory) return false;
-      if (only88Days && !a.is88DaysEligible) return false;
-      if (onlyHiring && !a.isCurrentlyHiring) return false;
+      if (visa417 && !a.eligible88Days) return false;
+      if (visa462 && !a.eligible88Days462) return false;
+      if (onlyHiring && !a.isActivelyRecruiting) return false;
       return true;
     });
-  }, [agencies, search, selectedState, selectedCategory, only88Days, onlyHiring]);
+  }, [agencies, search, selectedState, visa417, visa462, onlyHiring]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
@@ -107,9 +106,9 @@ export default function DirectoryScreen() {
       </View>
 
       {/* Toggle filters */}
-      <View style={{ flexDirection: 'row', paddingHorizontal: spacing.md, gap: 8, paddingBottom: spacing.xs }}>
+      <View style={{ flexDirection: 'row', paddingHorizontal: spacing.md, gap: 8, paddingBottom: spacing.xs, flexWrap: 'wrap' }}>
         <Pressable
-          onPress={() => setOnly88Days(!only88Days)}
+          onPress={() => setVisa417(!visa417)}
           style={{
             flexDirection: 'row',
             alignItems: 'center',
@@ -117,12 +116,30 @@ export default function DirectoryScreen() {
             paddingHorizontal: 12,
             paddingVertical: 6,
             borderRadius: borderRadius.full,
-            backgroundColor: only88Days ? '#16a34a' : colors.surfaceSecondary,
+            backgroundColor: visa417 ? '#16a34a' : colors.surfaceSecondary,
           }}
         >
-          <Ionicons name="checkmark-circle" size={14} color={only88Days ? '#fff' : colors.textTertiary} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: only88Days ? '#fff' : colors.textSecondary }}>
-            88 Days
+          <Ionicons name="checkmark-circle" size={14} color={visa417 ? '#fff' : colors.textTertiary} />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: visa417 ? '#fff' : colors.textSecondary }}>
+            Visa 417
+          </Text>
+        </Pressable>
+
+        <Pressable
+          onPress={() => setVisa462(!visa462)}
+          style={{
+            flexDirection: 'row',
+            alignItems: 'center',
+            gap: 4,
+            paddingHorizontal: 12,
+            paddingVertical: 6,
+            borderRadius: borderRadius.full,
+            backgroundColor: visa462 ? '#d97706' : colors.surfaceSecondary,
+          }}
+        >
+          <Ionicons name="checkmark-circle" size={14} color={visa462 ? '#fff' : colors.textTertiary} />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: visa462 ? '#fff' : colors.textSecondary }}>
+            Visa 462
           </Text>
         </Pressable>
 
@@ -141,24 +158,6 @@ export default function DirectoryScreen() {
           <Ionicons name="briefcase" size={14} color={onlyHiring ? '#fff' : colors.textTertiary} />
           <Text style={{ fontSize: 12, fontWeight: '600', color: onlyHiring ? '#fff' : colors.textSecondary }}>
             Hiring
-          </Text>
-        </Pressable>
-
-        <Pressable
-          onPress={() => setSelectedCategory(selectedCategory === 'All' ? 'Farm' : 'All')}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 4,
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: borderRadius.full,
-            backgroundColor: selectedCategory !== 'All' ? colors.primary : colors.surfaceSecondary,
-          }}
-        >
-          <Ionicons name="filter" size={14} color={selectedCategory !== 'All' ? '#fff' : colors.textTertiary} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: selectedCategory !== 'All' ? '#fff' : colors.textSecondary }}>
-            Category
           </Text>
         </Pressable>
       </View>

@@ -27,11 +27,9 @@ function InfoRow({ label, value, blur = false }: { label: string; value: string 
   );
 }
 
-function formatType(type: string | null): string {
-  if (!type) return '';
-  return type
-    .replace(/_/g, ' ')
-    .replace(/\b\w/g, l => l.toUpperCase());
+function formatLabel(str: string | null): string {
+  if (!str) return '';
+  return str.replace(/-|_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
 function formatConfidence(score: number): string {
@@ -81,31 +79,51 @@ export default function AgencyDetailScreen() {
           </View>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="business-outline" size={16} color={colors.textSecondary} />
-            <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>{formatType(agency.category)}</Text>
+            <Text style={{ fontSize: fontSize.sm, color: colors.textSecondary }}>{formatLabel(agency.category)}</Text>
           </View>
         </View>
 
         {/* Tags */}
-        <View style={{ flexDirection: 'row', gap: 8, marginTop: spacing.xs }}>
-          {agency.is88DaysEligible && (
+        <View style={{ flexDirection: 'row', gap: 8, marginTop: spacing.xs, flexWrap: 'wrap' }}>
+          {agency.eligible88Days && (
             <View style={{
               backgroundColor: '#dcfce7',
               paddingHorizontal: 10,
               paddingVertical: 4,
               borderRadius: borderRadius.full,
             }}>
-              <Text style={{ fontSize: 12, color: '#16a34a', fontWeight: '600' }}>88 Days Eligible</Text>
+              <Text style={{ fontSize: 12, color: '#16a34a', fontWeight: '600' }}>88 Days — Visa 417</Text>
             </View>
           )}
-          {agency.googleRating && (
+          {agency.eligible88Days462 && (
+            <View style={{
+              backgroundColor: '#fef3c7',
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: borderRadius.full,
+            }}>
+              <Text style={{ fontSize: 12, color: '#d97706', fontWeight: '600' }}>88 Days — Visa 462</Text>
+            </View>
+          )}
+          {agency.isActivelyRecruiting && (
+            <View style={{
+              backgroundColor: '#dbeafe',
+              paddingHorizontal: 10,
+              paddingVertical: 4,
+              borderRadius: borderRadius.full,
+            }}>
+              <Text style={{ fontSize: 12, color: '#2563eb', fontWeight: '600' }}>Currently Hiring</Text>
+            </View>
+          )}
+          {agency.googleRating != null && agency.googleRating > 0 && (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <Ionicons name="star" size={16} color="#f59e0b" />
               <Text style={{ fontSize: fontSize.sm, color: colors.text, fontWeight: '600' }}>
                 {agency.googleRating.toFixed(1)}
               </Text>
-              {agency.googleReviewCount && (
+              {agency.googleReviewsCount != null && (
                 <Text style={{ fontSize: 12, color: colors.textTertiary }}>
-                  ({agency.googleReviewCount})
+                  ({agency.googleReviewsCount})
                 </Text>
               )}
             </View>
@@ -124,8 +142,8 @@ export default function AgencyDetailScreen() {
         <Text style={{ fontSize: fontSize.lg, fontWeight: '700', color: colors.text, marginBottom: spacing.sm }}>
           Contact Information
         </Text>
-        <InfoRow label="Phone" value={agency.phonePrimary} blur={!isPremium} />
-        <InfoRow label="Email" value={agency.emailGeneral} blur={!isPremium} />
+        <InfoRow label="Phone" value={agency.phone} blur={!isPremium} />
+        <InfoRow label="Email" value={agency.email} blur={!isPremium} />
         <InfoRow label="Website" value={agency.website} blur={!isPremium} />
         <InfoRow label="Address" value={agency.address} blur={!isPremium} />
 
@@ -147,10 +165,10 @@ export default function AgencyDetailScreen() {
           </Pressable>
         )}
 
-        {isPremium && agency.phonePrimary && (
+        {isPremium && agency.phone && (
           <View style={{ flexDirection: 'row', gap: spacing.sm, marginTop: spacing.md }}>
             <Pressable
-              onPress={() => Linking.openURL(`tel:${agency.phonePrimary}`)}
+              onPress={() => Linking.openURL(`tel:${agency.phone}`)}
               style={{
                 flex: 1,
                 backgroundColor: colors.success,
@@ -165,9 +183,9 @@ export default function AgencyDetailScreen() {
               <Ionicons name="call" size={16} color="#fff" />
               <Text style={{ color: '#fff', fontWeight: '600' }}>Call</Text>
             </Pressable>
-            {agency.emailGeneral && (
+            {agency.email && (
               <Pressable
-                onPress={() => Linking.openURL(`mailto:${agency.emailGeneral}`)}
+                onPress={() => Linking.openURL(`mailto:${agency.email}`)}
                 style={{
                   flex: 1,
                   backgroundColor: colors.primary,
@@ -198,9 +216,9 @@ export default function AgencyDetailScreen() {
         <Text style={{ fontSize: fontSize.lg, fontWeight: '700', color: colors.text, marginBottom: spacing.sm }}>
           Details
         </Text>
-        <InfoRow label="Type" value={formatType(agency.contactType)} />
+        <InfoRow label="Type" value={formatLabel(agency.contactType)} />
         <InfoRow label="Confidence" value={formatConfidence(agency.confidenceScore)} />
-        {agency.salaryMin && agency.salaryMax && (
+        {agency.salaryMin != null && agency.salaryMax != null && (
           <InfoRow label="Salary Range" value={`$${agency.salaryMin} - $${agency.salaryMax} / ${agency.salaryUnit}`} />
         )}
       </View>

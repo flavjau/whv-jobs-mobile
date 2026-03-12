@@ -4,6 +4,10 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import { Agency } from '../lib/types';
 import { colors, spacing, borderRadius, fontSize } from '../constants/theme';
 
+function formatCategory(cat: string): string {
+  return cat.replace(/-|_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
+}
+
 export function AgencyCard({ agency }: { agency: Agency }) {
   const router = useRouter();
 
@@ -35,7 +39,7 @@ export function AgencyCard({ agency }: { agency: Agency }) {
             </Text>
           </View>
         </View>
-        {agency.googleRating && (
+        {agency.googleRating != null && agency.googleRating > 0 && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <Ionicons name="star" size={14} color="#f59e0b" />
             <Text style={{ fontSize: fontSize.sm, fontWeight: '600', color: colors.text }}>
@@ -54,11 +58,11 @@ export function AgencyCard({ agency }: { agency: Agency }) {
           borderRadius: borderRadius.full,
         }}>
           <Text style={{ fontSize: 11, color: colors.textSecondary, fontWeight: '500' }}>
-            {agency.category.replace(/-|_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+            {formatCategory(agency.category)}
           </Text>
         </View>
 
-        {agency.is88DaysEligible && (
+        {agency.eligible88Days && (
           <View style={{
             backgroundColor: '#dcfce7',
             paddingHorizontal: 8,
@@ -66,12 +70,25 @@ export function AgencyCard({ agency }: { agency: Agency }) {
             borderRadius: borderRadius.full,
           }}>
             <Text style={{ fontSize: 11, color: '#16a34a', fontWeight: '600' }}>
-              88 Days
+              Visa 417
             </Text>
           </View>
         )}
 
-        {agency.isCurrentlyHiring && (
+        {agency.eligible88Days462 && (
+          <View style={{
+            backgroundColor: '#fef3c7',
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: borderRadius.full,
+          }}>
+            <Text style={{ fontSize: 11, color: '#d97706', fontWeight: '600' }}>
+              Visa 462
+            </Text>
+          </View>
+        )}
+
+        {agency.isActivelyRecruiting && (
           <View style={{
             backgroundColor: '#dbeafe',
             paddingHorizontal: 8,
