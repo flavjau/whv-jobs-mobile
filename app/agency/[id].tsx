@@ -205,19 +205,7 @@ export default function AgencyDetailScreen() {
         )}
       </View>
 
-      {/* Details */}
-      <View style={{
-        backgroundColor: colors.surface,
-        borderRadius: borderRadius.md,
-        padding: spacing.md,
-        borderWidth: 1,
-        borderColor: colors.border,
-      }}>
-        <Text style={{ fontSize: fontSize.lg, fontWeight: '700', color: colors.text, marginBottom: spacing.sm }}>
-          Details
-        </Text>
-        <InfoRow label="Type" value={formatLabel(agency.contactType)} />
-      </View>
+
     </ScrollView>
   );
 }
