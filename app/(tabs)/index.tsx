@@ -14,8 +14,6 @@ export default function DirectoryScreen() {
   const [selectedState, setSelectedState] = useState('All');
   const [visa417, setVisa417] = useState(false);
   const [visa462, setVisa462] = useState(false);
-  const [onlyHiring, setOnlyHiring] = useState(false);
-
   const filtered = useMemo(() => {
     if (!agencies) return [];
     return agencies.filter(a => {
@@ -25,10 +23,9 @@ export default function DirectoryScreen() {
       if (selectedState !== 'All' && a.state !== selectedState) return false;
       if (visa417 && !a.eligible88Days) return false;
       if (visa462 && !a.eligible88Days462) return false;
-      if (onlyHiring && !a.isActivelyRecruiting) return false;
       return true;
     });
-  }, [agencies, search, selectedState, visa417, visa462, onlyHiring]);
+  }, [agencies, search, selectedState, visa417, visa462]);
 
   return (
     <SafeAreaView style={{ flex: 1, backgroundColor: colors.background }} edges={['top']}>
@@ -143,23 +140,7 @@ export default function DirectoryScreen() {
           </Text>
         </Pressable>
 
-        <Pressable
-          onPress={() => setOnlyHiring(!onlyHiring)}
-          style={{
-            flexDirection: 'row',
-            alignItems: 'center',
-            gap: 4,
-            paddingHorizontal: 12,
-            paddingVertical: 6,
-            borderRadius: borderRadius.full,
-            backgroundColor: onlyHiring ? '#2563eb' : colors.surfaceSecondary,
-          }}
-        >
-          <Ionicons name="briefcase" size={14} color={onlyHiring ? '#fff' : colors.textTertiary} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: onlyHiring ? '#fff' : colors.textSecondary }}>
-            Hiring
-          </Text>
-        </Pressable>
+
       </View>
 
       {/* Results count */}

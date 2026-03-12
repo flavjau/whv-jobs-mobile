@@ -8,8 +8,19 @@ function formatCategory(cat: string): string {
   return cat.replace(/-|_/g, ' ').replace(/\b\w/g, l => l.toUpperCase());
 }
 
+const TYPE_LABELS: Record<string, { label: string; color: string; bg: string }> = {
+  direct_employer: { label: 'Direct Employer', color: '#0369a1', bg: '#e0f2fe' },
+  traffic_control_company: { label: 'TC Company', color: '#7c3aed', bg: '#ede9fe' },
+  tc_company: { label: 'TC Company', color: '#7c3aed', bg: '#ede9fe' },
+  recruitment_agency: { label: 'Recruiter', color: '#be185d', bg: '#fce7f3' },
+  client_contractor: { label: 'Contractor', color: '#92400e', bg: '#fef3c7' },
+  contractor: { label: 'Contractor', color: '#92400e', bg: '#fef3c7' },
+  labour_hire: { label: 'Labour Hire', color: '#9333ea', bg: '#f3e8ff' },
+};
+
 export function AgencyCard({ agency }: { agency: Agency }) {
   const router = useRouter();
+  const typeInfo = agency.contactType ? TYPE_LABELS[agency.contactType] : null;
 
   return (
     <Pressable
@@ -51,6 +62,19 @@ export function AgencyCard({ agency }: { agency: Agency }) {
 
       {/* Tags row */}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6, marginTop: spacing.sm }}>
+        {typeInfo && (
+          <View style={{
+            backgroundColor: typeInfo.bg,
+            paddingHorizontal: 8,
+            paddingVertical: 3,
+            borderRadius: borderRadius.full,
+          }}>
+            <Text style={{ fontSize: 11, color: typeInfo.color, fontWeight: '600' }}>
+              {typeInfo.label}
+            </Text>
+          </View>
+        )}
+
         <View style={{
           backgroundColor: colors.surfaceSecondary,
           paddingHorizontal: 8,
@@ -87,26 +111,10 @@ export function AgencyCard({ agency }: { agency: Agency }) {
             </Text>
           </View>
         )}
-
-        {agency.isActivelyRecruiting && (
-          <View style={{
-            backgroundColor: '#dbeafe',
-            paddingHorizontal: 8,
-            paddingVertical: 3,
-            borderRadius: borderRadius.full,
-          }}>
-            <Text style={{ fontSize: 11, color: '#2563eb', fontWeight: '600' }}>
-              Hiring
-            </Text>
-          </View>
-        )}
       </View>
 
       {/* Footer */}
-      <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: spacing.sm }}>
-        <Text style={{ fontSize: 11, color: colors.textTertiary }}>
-          {agency.confidenceScore > 1 ? Math.round(agency.confidenceScore) : Math.round(agency.confidenceScore * 100)}% verified
-        </Text>
+      <View style={{ flexDirection: 'row', justifyContent: 'flex-end', alignItems: 'center', marginTop: spacing.sm }}>
         <Ionicons name="chevron-forward" size={16} color={colors.textTertiary} />
       </View>
     </Pressable>
