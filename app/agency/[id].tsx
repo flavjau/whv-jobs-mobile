@@ -217,10 +217,6 @@ export default function AgencyDetailScreen() {
           Details
         </Text>
         <InfoRow label="Type" value={formatLabel(agency.contactType)} />
-        <InfoRow label="Confidence" value={formatConfidence(agency.confidenceScore)} />
-        {agency.salaryMin != null && agency.salaryMax != null && (
-          <InfoRow label="Salary Range" value={`$${agency.salaryMin} - $${agency.salaryMax} / ${agency.salaryUnit}`} />
-        )}
       </View>
     </ScrollView>
   );
